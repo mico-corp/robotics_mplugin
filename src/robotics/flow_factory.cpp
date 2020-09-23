@@ -23,7 +23,7 @@
 #include <flow/flow.h>
 
 
-using namespace mico;
+// using namespace mico;
 using namespace flow;
 
 extern "C" flow::PluginNodeCreator* factory(){
