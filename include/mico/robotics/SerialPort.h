@@ -95,6 +95,20 @@ public:
         return result;
     }
 
+    /**
+     * Blocks until a N bytes are received from the serial device.
+     * \return a string containing the bytes line
+     * \throws boost::system::system_error on failure
+     */
+    uint8_t readByte() {
+        //Reading data char by char, code is optimized for simplicity, not speed
+        using namespace boost;
+        char c;
+        asio::read(serial,asio::buffer(&c,1));
+            
+        return c;
+    }
+
 private:
     boost::asio::io_service io;
     boost::asio::serial_port serial;

@@ -41,6 +41,11 @@ namespace mico{
     }
 
 
+    BlockSerialPort::~BlockSerialPort(){
+        run_ = false;
+        if(readThread_.joinable())
+            readThread_.join();
+    }
 
     bool BlockSerialPort::configure(std::unordered_map<std::string, std::string> _params) {
         for(auto &p:_params){
@@ -57,6 +62,14 @@ namespace mico{
         }else{
             // Open serial port
             sp_ = new SerialPort(device_, baudrate_);
+
+            readThread_ = std::thread([&](){
+                while(run_){
+                    uint8_t b = sp_->readByte();
+                    getPipe("tx")->flush(b);
+                }
+            });
+
             return true;
         }
     }

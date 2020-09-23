@@ -40,6 +40,7 @@ namespace mico{
         //     return QIcon((resourcesDir+"plus-positive-add-mathematical-symbol.svg").c_str());
         // }
         BlockSerialPort();
+        ~BlockSerialPort();
 
         virtual bool configure(std::unordered_map<std::string, std::string> _params) override;
         std::vector<std::pair<std::string, flow::Block::eParameterType>> parameters() override;
@@ -52,6 +53,8 @@ namespace mico{
         std::string device_;
         SerialPort *sp_;
         int baudrate_;
+        bool run_ = true;
+        std::thread readThread_;
     };
 
     //--------------------------------------------------------------------------------------------------------
@@ -91,6 +94,7 @@ namespace mico{
     char const nameFloatToBytes[] = "float";
     char const typeFloatToBytes[] = "float";
     typedef BlockCastToBytes<float, BlockNameFloatToBytes, nameFloatToBytes, typeFloatToBytes>  BlockFloatToBytes;
+
 
 }
 
