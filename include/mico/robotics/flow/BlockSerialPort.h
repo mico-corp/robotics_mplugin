@@ -34,11 +34,11 @@ namespace mico{
     class BlockSerialPort:public flow::Block{
     public:
         virtual std::string name() const override {return "SerialPort";}        
-        // virtual QIcon icon() const override { 
-        //     std::string userDir(getenv("USER"));
-        //     std::string resourcesDir = "/home/"+userDir+"/.flow/plugins/resources/robotics/";
-        //     return QIcon((resourcesDir+"plus-positive-add-mathematical-symbol.svg").c_str());
-        // }
+        virtual QIcon icon() const override { 
+            std::string userDir(getenv("USER"));
+            std::string resourcesDir = "/home/"+userDir+"/.flow/plugins/resources/robotics/";
+            return QIcon((resourcesDir+"serial_port_icon.png").c_str());
+        }
         BlockSerialPort();
         ~BlockSerialPort();
 
