@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------------------------------------
-//  Cameras wrapper MICO plugin
+//  robotics MICO plugin
 //---------------------------------------------------------------------------------------------------------------------
 //  Copyright 2020 Pablo Ramon Soria (a.k.a. Bardo91) pabramsor@gmail.com
 //---------------------------------------------------------------------------------------------------------------------
@@ -20,18 +20,52 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
-#include <flow/flow.h>
 #include <mico/robotics/flow/BlockSerialPort.h>
+#include <flow/Outpipe.h>
+#include <sstream>
 
-using namespace mico;
-using namespace flow;
+namespace mico{
+    BlockSerialPort::BlockSerialPort(){
+        createPipe("tx", "byte");
 
-extern "C" flow::PluginNodeCreator* factory(){
-    flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
+        createPolicy({{"rx", "byte"} });
 
-    // Functions
-    creator->registerNodeCreator([](){ return std::make_unique<FlowVisualBlock<BlockSerialPort>>(); }, "Robotics");
-    creator->registerNodeCreator([](){ return std::make_unique<FlowVisualBlock<BlockFloatToBytes>>(); }, "Robotics");
+        registerCallback({"rx"}, 
+                                [&](flow::DataFlow _data){
+                                    auto byte = _data.get<uint8_t>("rx");
+                                    std::string msg; msg += (char) byte;
+                                    sp_->writeString(msg);     
+                                    // write to serial port
+                                }
+        );
+    }
 
-    return creator;
+
+
+    bool BlockSerialPort::configure(std::unordered_map<std::string, std::string> _params) {
+        for(auto &p:_params){
+            std::stringstream ss;
+            ss << p.second;
+            if(p.first == "device"){
+                ss >> device_;
+            }if(p.first == "baudrate"){
+                ss >> baudrate_;
+            }
+        }
+        if(device_ == ""){
+            return false;
+        }else{
+            // Open serial port
+            sp_ = new SerialPort(device_, baudrate_);
+            return true;
+        }
+    }
+    
+    std::vector<std::pair<std::string, flow::Block::eParameterType>> BlockSerialPort::parameters(){
+        return {
+            {"device", flow::Block::eParameterType::STRING},
+            {"baudrate", flow::Block::eParameterType::INTEGER}
+        };
+    }
+
 }
