@@ -93,10 +93,10 @@ if(${OpenCV_FOUND})
 	endif()
 endif()
 
-if(${pcl_FOUND})
+if(${PCL_FOUND})
 	MESSAGE( STATUS "Adding properly PCL and its dependencies")
-	target_include_directories(${PLUGIN_NAME} PUBLIC ${pcl_INCLUDE_DIRS})
-	target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${pcl_LIBRARIES})
+	target_include_directories(${PLUGIN_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
+	target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${PCL_LIBRARIES})
 	
 	target_compile_definitions(${PLUGIN_NAME} PUBLIC "ENABLE_PCL" "DISABLE_PCAP" "DISABLE_PNG" "DISABLE_LIBUSB_1_0")
 
