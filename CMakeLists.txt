@@ -79,32 +79,6 @@ foreach(DEP ${MICO_DEPS})
   target_link_libraries(${PLUGIN_NAME} LINK_PRIVATE mico::mico-${DEP})
 endforeach()
 
-# find_package(realsense2 HINTS "/usr/local/lib/cmake/realsense2")
-find_package(realsense2)
-if(${realsense2_FOUND})
-	MESSAGE(STATUS "Found librealsense v2, compiling RealSense devices wrapper")
-	target_compile_definitions(${PLUGIN_NAME} PUBLIC "ENABLE_LIBREALSENSE_V2")
-	target_include_directories(${PLUGIN_NAME} PUBLIC ${realsense2_INCLUDE_DIRS})
-    target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${realsense2_LIBRARY})
-else()
-	find_package(librealsense)
-	if(${LIBREALSENSE_FOUND})
-		MESSAGE(STATUS "Found librealsense v1, compiling RealSense devices wrapper")
-		target_compile_definitions(${PLUGIN_NAME} PUBLIC "ENABLE_LIBREALSENSE_V1")
-		target_include_directories(${PLUGIN_NAME} PUBLIC ${LIBREALSENSE_INCLUDE_DIRS})
-		target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${LIBREALSENSE_LIBRARIES})
-	endif()
-endif()
-
-find_package(libfreenect)
-if(${LIBFREENECT_FOUND})
-	MESSAGE(STATUS "Found libfreenect, compiling kinect wrapper")
-	target_compile_definitions(${PLUGIN_NAME} PUBLIC "ENABLE_LIBFREENECT")
-	target_include_directories(${PLUGIN_NAME} PUBLIC ${LIBFREENECT_INCLUDE_DIRS})
-    target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${LIBFREENECT_LIBRARY})
-endif()
-
-find_package(OpenCV REQUIRED)
 if(${OpenCV_FOUND})
 	set_target_properties(${OpenCV_LIBS} PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
 	target_include_directories(${PLUGIN_NAME} PUBLIC ${OpenCV_INCLUDE_DIRS})
@@ -119,11 +93,10 @@ if(${OpenCV_FOUND})
 	endif()
 endif()
 
-find_package(PCL QUIET REQUIRED)
-if(${PCL_FOUND})
+if(${pcl_FOUND})
 	MESSAGE( STATUS "Adding properly PCL and its dependencies")
-	target_include_directories(${PLUGIN_NAME} PUBLIC ${PCL_INCLUDE_DIRS})
-	target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${PCL_LIBRARIES})
+	target_include_directories(${PLUGIN_NAME} PUBLIC ${pcl_INCLUDE_DIRS})
+	target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${pcl_LIBRARIES})
 	
 	target_compile_definitions(${PLUGIN_NAME} PUBLIC "ENABLE_PCL" "DISABLE_PCAP" "DISABLE_PNG" "DISABLE_LIBUSB_1_0")
 
@@ -136,34 +109,6 @@ else()
 	MESSAGE( FATAL_ERROR "Couldnt Add PCL and/or it's dependencies")
 endif()
 
-find_package(Eigen3 REQUIRED)
-
-#########################################
-## Load Artec SDK 
-if(WIN32) # Look for a better way of doing this.
-	if(${CMAKE_EXE_LINKER_FLAGS} MATCHES  "[/]([a-z])+[:]+x64")
-		message(STATUS "Using ARTEC SDK with arch x64")
-		file(GLOB_RECURSE ARTEC_LIBS "C:/Program Files/Artec/Artec 3D Scanning SDK/bin-x64/*.lib")
-	elseif(${CMAKE_EXE_LINKER_FLAGS} MATCHES  "[/]([a-z])+[:]+x86")
-	message(STATUS "Using ARTEC SDK with arch x86")
-		file(GLOB_RECURSE ARTEC_LIBS "C:/Program Files/Artec/Artec 3D Scanning SDK/bin/*.lib")
-	else()
-		message(WARNING "Can't detect architecture configuration, assuming x86")
-		file(GLOB_RECURSE ARTEC_LIBS "C:/Program Files/Artec/Artec 3D Scanning SDK/bin/*.lib")
-	endif()
-	
-	set(ARTEC_INCLUDE_DIR "C:/Program Files/Artec/Artec 3D Scanning SDK/include")
-	if(ARTEC_LIBS STREQUAL "")
-		MESSAGE(WARNING "Couldn't found ARTEC SDK")
-	else()
-		target_compile_definitions(${PLUGIN_NAME} PUBLIC "HAS_ARTEC_SDK")
-		MESSAGE(STATUS "Found ARTEC SDK, adding to current build")
-	endif()
-
-	target_include_directories(${PLUGIN_NAME} PUBLIC ${ARTEC_INCLUDE_DIR})
-	target_link_libraries(${PLUGIN_NAME} LINK_PUBLIC ${ARTEC_LIBS})
-endif()
-
 ##################################################
 ######    Library.                        ########
 ##################################################
@@ -172,7 +117,6 @@ endif()
 ##################################################
 ######    Documentation.                  ########
 ##################################################
-find_package(Doxygen)
 if(DOXYGEN_FOUND)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 	add_custom_target(	doc_mico-robotics
