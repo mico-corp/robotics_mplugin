@@ -47,7 +47,7 @@ namespace mico{
             readThread_.join();
     }
 
-    bool BlockSerialPort::configure(std::unordered_map<std::string, std::string> _params) {
+    bool BlockSerialPort::configure(std::vector<flow::ConfigParameterDef> _params) {
         for(auto &p:_params){
             std::stringstream ss;
             ss << p.second;
@@ -74,10 +74,10 @@ namespace mico{
         }
     }
     
-    std::vector<std::pair<std::string, flow::Block::eParameterType>> BlockSerialPort::parameters(){
+    std::vector<flow::ConfigParameterDef> BlockSerialPort::parameters(){
         return {
-            {"device", flow::Block::eParameterType::STRING},
-            {"baudrate", flow::Block::eParameterType::INTEGER}
+            {"device", flow::ConfigParameterDef::eParameterType::STRING},
+            {"baudrate", flow::ConfigParameterDef::eParameterType::INTEGER}
         };
     }
 
