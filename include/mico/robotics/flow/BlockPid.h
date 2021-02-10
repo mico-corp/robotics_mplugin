@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------------------------------------------------
-//  Cameras wrapper MICO plugin
+//  robotics MICO plugin
 //---------------------------------------------------------------------------------------------------------------------
 //  Copyright 2020 Pablo Ramon Soria (a.k.a. Bardo91) pabramsor@gmail.com
 //---------------------------------------------------------------------------------------------------------------------
@@ -20,17 +20,41 @@
 //---------------------------------------------------------------------------------------------------------------------
 
 
+
+#ifndef MICO_ROBOTICS_FLOW_BLOCKS_BLOCKPID_H_
+#define MICO_ROBOTICS_FLOW_BLOCKS_BLOCKPID_H_
+
+#include <flow/Block.h>
 #include <flow/flow.h>
-#include <mico/robotics/flow/BlockPid.h>
+#include <mico/robotics/PID.h>
 
-using namespace mico;
-using namespace flow;
 
-extern "C" flow::PluginNodeCreator* factory(){
-    flow::PluginNodeCreator *creator = new flow::PluginNodeCreator;
+namespace mico{
 
-    // Functions
-    creator->registerNodeCreator([](){ return std::make_unique<FlowVisualBlock<BlockPid>>(); }, "Robotics");
+    class BlockPid:public flow::Block{
+    public:
+        virtual std::string name() const override {return "PID";}        
+        
+        BlockPid();
 
-    return creator;
+        virtual bool configure(std::vector<flow::ConfigParameterDef> _params) override;
+        std::vector<flow::ConfigParameterDef> parameters() override;
+
+        std::string description() const override {return    "PID"
+                                                            "   - Inputs: \n"
+                                                            "   - Outputs: \n";};
+
+    private:
+        bool firstTime_ = true;
+        float ref_, p_, i_, d_;
+        PID *pid_ = nullptr;
+
+        std::chrono::steady_clock::time_point t0_;
+    };
+
+
 }
+
+
+
+#endif

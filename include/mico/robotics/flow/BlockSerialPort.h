@@ -29,8 +29,8 @@
 #include <mico/robotics/SerialPort.h>
 
 
+/*
 namespace mico{
-
     class BlockSerialPort:public flow::Block{
     public:
         virtual std::string name() const override {return "SerialPort";}        
@@ -97,7 +97,7 @@ namespace mico{
 
 
 }
-
+*/
 
 
 #endif

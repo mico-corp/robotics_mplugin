@@ -23,8 +23,9 @@
 #include <mico/robotics/flow/BlockSerialPort.h>
 #include <flow/Outpipe.h>
 #include <sstream>
-
+/*
 namespace mico{
+    
     BlockSerialPort::BlockSerialPort(){
         createPipe("tx", "byte");
 
@@ -81,4 +82,4 @@ namespace mico{
         };
     }
 
-}
+}*/
