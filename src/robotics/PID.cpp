@@ -30,82 +30,83 @@
 
 namespace mico{
 
-    PID::PID(float _kp, float _ki, float _kd, float _fc, float _minSat, float _maxSat) {
-        kp_ = _kp;
-        ki_ = _ki;
-        kd_ = _kd;
-        fc_ = _fc;
-        assert(_minSat <= _maxSat);
-        minSat_ = _minSat;
-        maxSat_ = _maxSat;
-        clear();
-    }
-
-    /*void PID::setAntiWindup(AntiWindupMethod _antiWindup, std::vector<float> _params){
-        
-    }*/
-
-    void PID::clear(){
-        lastError_ = 0; 
-        lastResult_ = 0; 
-        accumErr_ = 0; 
-        accumDeriv_ = 0;
-    }
-
-    void PID::overrideAccumulative(float _accumulative, bool _isOutputScale){
-        if(!std::isnan(_accumulative)){
-            if(_isOutputScale){
-                if(ki_ != 0.0f){
-                    accumErr_ = _accumulative/ki_;
-                }
-            }else{
-                accumErr_ = _accumulative;
-            }
-        }
-    }
-
-    void PID::reference(float _ref, float _time, bool _reset) { 
-        reference_ = _ref; 
-        targetReference_ = _ref;
-        // if(_time == 0){
-        //     reference_ = _ref; 
-        //     targetReference_ = _ref;
-        // }else{
-        //     targetReference_ = _ref;
-        //     slope_ = (targetReference_ - reference_)/_time;
-        // }
-
-        if(_reset){
+    namespace robotics{
+        PID::PID(float _kp, float _ki, float _kd, float _fc, float _minSat, float _maxSat) {
+            kp_ = _kp;
+            ki_ = _ki;
+            kd_ = _kd;
+            fc_ = _fc;
+            assert(_minSat <= _maxSat);
+            minSat_ = _minSat;
+            maxSat_ = _maxSat;
             clear();
         }
+
+        /*void PID::setAntiWindup(AntiWindupMethod _antiWindup, std::vector<float> _params){
+            
+        }*/
+
+        void PID::clear(){
+            lastError_ = 0; 
+            lastResult_ = 0; 
+            accumErr_ = 0; 
+            accumDeriv_ = 0;
+        }
+
+        void PID::overrideAccumulative(float _accumulative, bool _isOutputScale){
+            if(!std::isnan(_accumulative)){
+                if(_isOutputScale){
+                    if(ki_ != 0.0f){
+                        accumErr_ = _accumulative/ki_;
+                    }
+                }else{
+                    accumErr_ = _accumulative;
+                }
+            }
+        }
+
+        void PID::reference(float _ref, float _time, bool _reset) { 
+            reference_ = _ref; 
+            targetReference_ = _ref;
+            // if(_time == 0){
+            //     reference_ = _ref; 
+            //     targetReference_ = _ref;
+            // }else{
+            //     targetReference_ = _ref;
+            //     slope_ = (targetReference_ - reference_)/_time;
+            // }
+
+            if(_reset){
+                clear();
+            }
+        }
+
+
+        float PID::update(float _val, float _incT) {
+
+            float dt = _incT; // 666 input arg?
+            float err = reference_ - _val;
+            
+            float up = kp_ * err;
+
+            accumErr_ += err * dt;
+            float ui = ki_ * accumErr_;
+
+            float ud = ((kd_ * err) - accumDeriv_) * fc_ ;
+            accumDeriv_ += ud * dt;
+
+            // Compute PID
+            float unsaturated =   up + ui + ud;
+
+            lastError_ = err;
+
+            // Saturate signal
+            float saturated = std::min(std::max(unsaturated, minSat_), maxSat_);
+            lastResult_ = saturated;
+            
+            return lastResult_;
+
+        }
     }
-
-
-    float PID::update(float _val, float _incT) {
-
-        float dt = _incT; // 666 input arg?
-        float err = reference_ - _val;
-        
-        float up = kp_ * err;
-
-        accumErr_ += err * dt;
-        float ui = ki_ * accumErr_;
-
-        float ud = ((kd_ * err) - accumDeriv_) * fc_ ;
-        accumDeriv_ += ud * dt;
-
-        // Compute PID
-        float unsaturated =   up + ui + ud;
-
-        lastError_ = err;
-
-        // Saturate signal
-        float saturated = std::min(std::max(unsaturated, minSat_), maxSat_);
-        lastResult_ = saturated;
-        
-        return lastResult_;
-
-    }
-
 }
 

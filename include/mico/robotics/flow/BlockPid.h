@@ -30,28 +30,36 @@
 
 
 namespace mico{
+    namespace robotics{
+        /// Mico block that provides an easy to use interface for a PID.
+        /// @ingroup  mico_robotics
+        class BlockPid:public flow::Block{
+        public:
+            /// Get name of block
+            virtual std::string name() const override {return "PID";}        
+            
+            /// Base constructor
+            BlockPid();
 
-    class BlockPid:public flow::Block{
-    public:
-        virtual std::string name() const override {return "PID";}        
-        
-        BlockPid();
+            /// Configure block with given parameters.
+            virtual bool configure(std::vector<flow::ConfigParameterDef> _params) override;
+            
+            /// Get list of parameters of the block
+            std::vector<flow::ConfigParameterDef> parameters() override;
 
-        virtual bool configure(std::vector<flow::ConfigParameterDef> _params) override;
-        std::vector<flow::ConfigParameterDef> parameters() override;
+            /// Returns a brief description of the block
+            std::string description() const override {return    "PID"
+                                                                "   - Inputs: \n"
+                                                                "   - Outputs: \n";};
 
-        std::string description() const override {return    "PID"
-                                                            "   - Inputs: \n"
-                                                            "   - Outputs: \n";};
+        private:
+            bool firstTime_ = true;
+            float ref_, p_, i_, d_;
+            PID *pid_ = nullptr;
 
-    private:
-        bool firstTime_ = true;
-        float ref_, p_, i_, d_;
-        PID *pid_ = nullptr;
-
-        std::chrono::steady_clock::time_point t0_;
-    };
-
+            std::chrono::steady_clock::time_point t0_;
+        };
+    }
 
 }
 

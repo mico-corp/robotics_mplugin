@@ -25,60 +25,61 @@
 #include <sstream>
 
 namespace mico {
-    BlockPid::BlockPid(){
-        createPipe<float>("u");
+    namespace robotics{
+        BlockPid::BlockPid(){
+            createPipe<float>("u");
 
-        createPolicy({ flow::makeInput<float>("x")});
+            createPolicy({ flow::makeInput<float>("x")});
 
-        registerCallback(   {"x"}, 
-                            [&](flow::DataFlow _data){
-                                if (getPipe("u")->registrations()) {
-                                    if(firstTime_){
-                                        t0_ = std::chrono::steady_clock::now();
-                                        firstTime_ = false;
-                                    }else{
-                                        auto t1 = std::chrono::steady_clock::now();
-                                        float incT = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0_).count();
-                                        incT /= 1000.0;
-                                        t0_ = t1;
+            registerCallback(   {"x"}, 
+                                [&](flow::DataFlow _data){
+                                    if (getPipe("u")->registrations()) {
+                                        if(firstTime_){
+                                            t0_ = std::chrono::steady_clock::now();
+                                            firstTime_ = false;
+                                        }else{
+                                            auto t1 = std::chrono::steady_clock::now();
+                                            float incT = std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0_).count();
+                                            incT /= 1000.0;
+                                            t0_ = t1;
 
-                                        float x = _data.get<float>("x");
-                                        float u = pid_->update(x, incT);
-                                        getPipe("u")->flush(u);
+                                            float x = _data.get<float>("x");
+                                            float u = pid_->update(x, incT);
+                                            getPipe("u")->flush(u);
 
+                                        }
                                     }
                                 }
-                            }
-        );
-    }
+            );
+        }
 
 
-    bool BlockPid::configure(std::vector<flow::ConfigParameterDef> _params) {
-        if (auto param = getParamByName(_params, "reference"); param) {
-            ref_ = param.value().asDecimal();
+        bool BlockPid::configure(std::vector<flow::ConfigParameterDef> _params) {
+            if (auto param = getParamByName(_params, "reference"); param) {
+                ref_ = param.value().asDecimal();
+            }
+            if (auto param = getParamByName(_params, "p"); param) {
+                p_ = param.value().asDecimal();
+            }
+            if (auto param = getParamByName(_params, "i"); param) {
+                i_ = param.value().asDecimal();
+            }
+            if (auto param = getParamByName(_params, "d"); param) {
+                d_ = param.value().asDecimal();
+            }
+            pid_ = new PID(p_,i_,d_);
+            pid_->reference(ref_);
+            firstTime_ = true;
+            return true;
         }
-        if (auto param = getParamByName(_params, "p"); param) {
-            p_ = param.value().asDecimal();
+        
+        std::vector<flow::ConfigParameterDef> BlockPid::parameters(){
+            return {
+                    {"reference", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
+                    {"p", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
+                    {"i", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
+                    {"d", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f}
+            };
         }
-        if (auto param = getParamByName(_params, "i"); param) {
-            i_ = param.value().asDecimal();
-        }
-        if (auto param = getParamByName(_params, "d"); param) {
-            d_ = param.value().asDecimal();
-        }
-        pid_ = new PID(p_,i_,d_);
-        pid_->reference(ref_);
-        firstTime_ = true;
-        return true;
     }
-    
-    std::vector<flow::ConfigParameterDef> BlockPid::parameters(){
-        return {
-                {"reference", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
-                {"p", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
-                {"i", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f},
-                {"d", flow::ConfigParameterDef::eParameterType::DECIMAL, 1.0f}
-        };
-    }
-
 }

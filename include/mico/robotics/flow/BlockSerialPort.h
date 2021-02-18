@@ -33,8 +33,10 @@
 namespace mico{
     class BlockSerialPort:public flow::Block{
     public:
+        /// Get name of block
         virtual std::string name() const override {return "SerialPort";}        
-        virtual QIcon icon() const override { 
+        /// Retreive icon of block    
+            virtual QIcon icon() const override { 
             std::string userDir(getenv("USER"));
             std::string resourcesDir = "/home/"+userDir+"/.flow/plugins/resources/robotics/";
             return QIcon((resourcesDir+"serial_port_icon.png").c_str());
@@ -42,9 +44,12 @@ namespace mico{
         BlockSerialPort();
         ~BlockSerialPort();
 
+        /// Configure block with given parameters.
         virtual bool configure(std::vector<flow::ConfigParameterDef> _params) override;
+        /// Get list of parameters of the block
         std::vector<flow::ConfigParameterDef> parameters() override;
 
+        /// Returns a brief description of the block
         std::string description() const override {return    "Creates a serial port"
                                                             "   - Inputs: \n"
                                                             "   - Outputs: \n";};
@@ -84,6 +89,7 @@ namespace mico{
                                 );
         }
 
+        /// Get name of block
         virtual std::string name() const override {return BlockName_;}        
     
     protected:

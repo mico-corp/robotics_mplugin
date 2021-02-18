@@ -30,78 +30,78 @@
 #include <cmath>
 
 namespace mico{
+    namespace robotics{
+        /// Just another implementation of a PID controller.
+        /// @ingroup  mico_robotics
+        class PID {
+        public:
+            struct PIDParams{
+                float kp, ki, kd, sat, wind, fc;
+            };
 
-    /// Implemenatation of PID controller.
-    /// @ingroup aerox_suite
-    class PID {
-    public:
-        struct PIDParams{
-            float kp, ki, kd, sat, wind, fc;
-        };
+            enum class AntiWindupMethod { None, Saturation, BackCalculation, Clamping};
 
-        enum class AntiWindupMethod { None, Saturation, BackCalculation, Clamping};
+            PID(float _kp, float _ki, float _kd, float fc_ = 30, 
+                float _minSat = -std::numeric_limits<float>::max(),
+                float _maxSat = std::numeric_limits<float>::max() );
+            
+            void setAntiWindup(AntiWindupMethod _antiWindup, std::vector<float> _params = {});
 
-        PID(float _kp, float _ki, float _kd, float fc_ = 30, 
-            float _minSat = -std::numeric_limits<float>::max(),
-            float _maxSat = std::numeric_limits<float>::max() );
+
+            float update(float _val, float _incT);
+            
+            void clear();
+
+            /// Override internal value of accumulative term (Integral component). 
+            /// \param _accumulative: magnitude to be written. If negative, value is ignored.
+            /// \param _isOutputScale: if true, the _accumulative term will be divided by Ki to scale it. If false, the value is set as given.
+            void overrideAccumulative(float _accumulative, bool _isOutputScale);
+
+            float reference() { return reference_; }
+            void reference(float _ref, float time = 0, bool _reset = true);
+
+            float kp() const { return kp_; }
+            float ki() const { return ki_; }
+            float kd() const { return kd_; }
+            float fc() const { return fc_; }
         
-        void setAntiWindup(AntiWindupMethod _antiWindup, std::vector<float> _params = {});
-
-
-        float update(float _val, float _incT);
-        
-        void clear();
-
-        /// Override internal value of accumulative term (Integral component). 
-        /// \param _accumulative: magnitude to be written. If negative, value is ignored.
-        /// \param _isOutputScale: if true, the _accumulative term will be divided by Ki to scale it. If false, the value is set as given.
-        void overrideAccumulative(float _accumulative, bool _isOutputScale);
-
-        float reference() { return reference_; }
-        void reference(float _ref, float time = 0, bool _reset = true);
-
-        float kp() const { return kp_; }
-        float ki() const { return ki_; }
-        float kd() const { return kd_; }
-        float fc() const { return fc_; }
-    
-        void kp(float _kp) { kp_ = _kp; }
-        void ki(float _ki) { 
-            if(_ki != 0.0f){
-                // Scale accumulated error to prevent abrupt changes in integral component of control signal
-                accumErr_ *=ki_/_ki;    
+            void kp(float _kp) { kp_ = _kp; }
+            void ki(float _ki) { 
+                if(_ki != 0.0f){
+                    // Scale accumulated error to prevent abrupt changes in integral component of control signal
+                    accumErr_ *=ki_/_ki;    
+                }
+                ki_ = _ki; 
             }
-            ki_ = _ki; 
-        }
-        void kd(float _kd) { kd_ = _kd; }
-        void fc(float _fc) { fc_ = _fc; }
-    
-        void setSaturations(float _min, float _max) { minSat_ = _min; maxSat_ = _max; }
-        void getSaturations(float &_min, float &_max) { _min = minSat_; _max = maxSat_; }
-    
-    private:
-        float reference_ = 0;
-        float targetReference_ = 0;
-        float slope_ = 0;
-
-        float kp_ = 0, ki_ = 0, kd_ = 0, fc_ = 0;;
-        float minSat_ = 0, maxSat_ = 0;
-        float lastResult_ = 0; 
-        float lastError_ = 0;
-        float accumErr_ = 0;
-        float accumDeriv_ = 0;
+            void kd(float _kd) { kd_ = _kd; }
+            void fc(float _fc) { fc_ = _fc; }
         
-        // Params related with antiwindups
-        // Saturation
-        //float minWindup_ = 0, maxWindup_ = 0;
-        // BackCalculation
-        float lastBackCalculation_ = 0;
-        float backCalculationCte_ = 1;
-        // Clamping
-        bool clampFactor_ = 1;
+            void setSaturations(float _min, float _max) { minSat_ = _min; maxSat_ = _max; }
+            void getSaturations(float &_min, float &_max) { _min = minSat_; _max = maxSat_; }
+        
+        private:
+            float reference_ = 0;
+            float targetReference_ = 0;
+            float slope_ = 0;
 
-    };
+            float kp_ = 0, ki_ = 0, kd_ = 0, fc_ = 0;;
+            float minSat_ = 0, maxSat_ = 0;
+            float lastResult_ = 0; 
+            float lastError_ = 0;
+            float accumErr_ = 0;
+            float accumDeriv_ = 0;
+            
+            // Params related with antiwindups
+            // Saturation
+            //float minWindup_ = 0, maxWindup_ = 0;
+            // BackCalculation
+            float lastBackCalculation_ = 0;
+            float backCalculationCte_ = 1;
+            // Clamping
+            bool clampFactor_ = 1;
 
+        };
+    }
 }
 
 #endif
