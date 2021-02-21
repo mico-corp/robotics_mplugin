@@ -23,7 +23,7 @@
 #include <flow/flow.h>
 #include <mico/robotics/flow/BlockPid.h>
 
-using namespace mico;
+using namespace mico::robotics;
 using namespace flow;
 
 extern "C" flow::PluginNodeCreator* factory(){
